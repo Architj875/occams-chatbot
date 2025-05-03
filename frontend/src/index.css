@@ -1,0 +1,106 @@
+/* Tailwind directives should be at the top */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base layer adjustments from original index.css */
+@layer base {
+  body {
+    @apply antialiased; /* Apply anti-aliasing for smoother fonts */
+  }
+  html {
+    scroll-behavior: smooth; /* Add smooth scrolling behavior */
+  }
+}
+
+/* --- Scrollbar Hiding --- */
+/* Hide scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+/* Applied specifically to elements with the .custom-scrollbar class */
+.custom-scrollbar::-webkit-scrollbar {
+  display: none; /* Hide the scrollbar */
+  width: 0;  /* Remove scrollbar space */
+  height: 0; /* Remove scrollbar space */
+}
+
+/* Hide scrollbar for Firefox */
+/* Applied specifically to elements with the .custom-scrollbar class */
+.custom-scrollbar {
+  scrollbar-width: none; /* Hide the scrollbar in Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for IE/Edge (older versions) */
+}
+/* --- End Scrollbar Hiding --- */
+
+
+/* Tailwind Prose Overrides for Chat Bubbles (Optional but recommended) */
+/* This ensures markdown content fits nicely within the bubbles */
+.prose {
+  /* Override default prose max-width if needed inside chat bubbles */
+  /* max-width: 100% !important; */
+}
+
+.prose :where(p):where([class~="lead"]) {
+  @apply text-inherit; /* Inherit color from parent bubble */
+}
+.prose :where(a):where([class~="lead"]) {
+   @apply text-inherit; /* Inherit color */
+}
+/* Add more overrides if specific markdown elements don't look right */
+.prose :where(strong) {
+   @apply text-inherit font-semibold; /* Inherit color, ensure bold */
+}
+.prose :where(ul) {
+    @apply pl-4 list-disc; /* Adjust list style/padding if needed */
+}
+.prose :where(ol) {
+    @apply pl-4 list-decimal;
+}
+.prose :where(li) {
+    @apply my-1; /* Adjust list item margin */
+}
+.prose :where(li p) {
+    @apply my-0; /* Remove paragraph margin inside list items */
+}
+.prose :where(code):not(:where([class~="not-prose"] *))::before,
+.prose :where(code):not(:where([class~="not-prose"] *))::after {
+  content: ""; /* Remove backticks around inline code if desired */
+}
+.prose :where(code):not(:where([class~="not-prose"] *)) {
+  @apply bg-black/30 px-1 py-0.5 rounded text-purple-200 text-sm; /* Style inline code */
+}
+
+
+/* Ensure body takes full height for flex layout */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Animations from original index.css */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Gradient animation (already present, kept for completeness) */
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.bg-gradient-animate {
+  background-size: 200% 200%;
+  animation: gradient 15s ease infinite;
+}
+

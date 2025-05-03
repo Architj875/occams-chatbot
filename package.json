@@ -1,0 +1,26 @@
+{
+  "name": "occams-chatbot",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node server.js"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@langchain/community": "^0.3.42",
+    "@langchain/core": "^0.3.51",
+    "@langchain/google-genai": "^0.2.5",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "langchain": "^0.3.24",
+    "puppeteer": "^24.8.0",
+    "socket.io": "^4.8.1"
+  }
+}
