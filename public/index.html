@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Occam's Advisory Chatbot</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Occam's Advisory Chatbot</h1>
+    <p>Ask questions about Occam's Advisory. Answers are based solely on information from occamsadvisory.com.</p>
+    <div id="status">Connecting...</div>
+    <div id="chatbox">
+        <ul id="messages"></ul>
+    </div>
+    <div id="input-area">
+        <input id="m" autocomplete="off" placeholder="Type your question here..." /><button id="sendButton">Send</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
