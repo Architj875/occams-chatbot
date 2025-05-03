@@ -11,22 +11,33 @@
   html {
     scroll-behavior: smooth; /* Add smooth scrolling behavior */
   }
+
+  /* Global scrollbar hiding */
+  * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
 }
 
 /* --- Scrollbar Hiding --- */
 /* Hide scrollbar for WebKit browsers (Chrome, Safari, Edge) */
-/* Applied specifically to elements with the .custom-scrollbar class */
-.custom-scrollbar::-webkit-scrollbar {
-  display: none; /* Hide the scrollbar */
-  width: 0;  /* Remove scrollbar space */
-  height: 0; /* Remove scrollbar space */
+.custom-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* Hide scrollbar for Firefox */
-/* Applied specifically to elements with the .custom-scrollbar class */
-.custom-scrollbar {
-  scrollbar-width: none; /* Hide the scrollbar in Firefox */
-  -ms-overflow-style: none; /* Hide scrollbar for IE/Edge (older versions) */
+.custom-scrollbar,
+.scrollbar-hide {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 /* --- End Scrollbar Hiding --- */
 

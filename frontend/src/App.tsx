@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, BotMessageSquare } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 import ReactMarkdown from 'react-markdown';
@@ -49,20 +49,16 @@ function App() {
   ]);
   const [status, setStatus] = useState('Connecting...');
   const [socket, setSocket] = useState<Socket | null>(null);
-  // **NEW**: State to track loading status
   const [isLoading, setIsLoading] = useState(false);
 
-  const chatContainerRef = useRef<HTMLDivElement>(null);
+  // **CHANGED**: Ref now points to the end of the messages list for scrolling
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Helper function to scroll chat to bottom
-  const scrollToBottom = () => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTo({
-        top: chatContainerRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  };
+  // Helper function to scroll chat to bottom smoothly
+  const scrollToBottom = useCallback(() => {
+    // Scroll the element into view
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   // Effect to establish Socket.IO connection
   useEffect(() => {
@@ -73,54 +69,47 @@ function App() {
     newSocket.on('disconnect', () => {
       console.warn('Disconnected from server.');
       setStatus('Disconnected. Trying to reconnect...');
-      setIsLoading(false); // Stop loading if disconnected
+      setIsLoading(false);
     });
     newSocket.on('connect_error', (err) => {
       console.error("Connection Error:", err);
       setStatus('Failed to connect to the server.');
-      setIsLoading(false); // Stop loading on connection error
+      setIsLoading(false);
     });
     newSocket.on('status', (msg: string) => {
       console.log('Status update:', msg);
       setStatus(msg);
     });
     newSocket.on('bot_response', (responseText: string) => {
-      // **CHANGED**: Set loading to false when response is received
       setIsLoading(false);
       setMessages(prev => [...prev, { text: responseText, isUser: false, urls: [] }]);
     });
 
-    // Cleanup on unmount
     return () => {
       console.log('Disconnecting socket...');
       newSocket.disconnect();
     };
-  }, []); // Empty dependency array ensures this runs only once
+  }, []);
 
   // Effect to scroll to the bottom whenever messages or loading state change
   useEffect(() => {
+    // Scroll slightly after the state updates to allow rendering
     const timer = setTimeout(() => {
         scrollToBottom();
     }, 100);
     return () => clearTimeout(timer);
-  }, [messages, isLoading]); // Add isLoading as a dependency
+  }, [messages, isLoading, scrollToBottom]);
+
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedMessage = message.trim();
-    if (!trimmedMessage || !socket || isLoading) return; // Prevent sending while loading
+    if (!trimmedMessage || !socket || isLoading) return;
 
-    // Add user message
     setMessages(prev => [...prev, { text: trimmedMessage, isUser: true }]);
-
-    // **CHANGED**: Set loading to true
     setIsLoading(true);
-
-    // Emit message to server
     socket.emit('user_message', trimmedMessage);
-
-    // Clear input
     setMessage('');
   };
 
@@ -133,8 +122,10 @@ function App() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 bg-gradient-animate flex flex-col h-screen overflow-hidden">
-      {/* Top Bar */}
+    // Outer container: Use min-height but allow content to potentially make it scrollable
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 bg-gradient-animate flex flex-col">
+
+      {/* Top Bar: Sticky */}
       <div className="w-full bg-black/30 backdrop-blur-xl border-b border-purple-500/20 sticky top-0 z-10 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -149,11 +140,8 @@ function App() {
         </div>
       </div>
 
-      {/* Chat area */}
-      <div
-        ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 mx-auto w-full max-w-4xl scroll-smooth custom-scrollbar"
-      >
+      {/* Chat area: Takes up remaining space */}
+      <div className="flex-1 p-4 space-y-4 mx-auto w-full max-w-4xl overflow-y-auto">
         {/* Render existing messages */}
         {messages.map((msg, idx) => (
           <div key={idx} className="animate-fade-in">
@@ -183,11 +171,12 @@ function App() {
             </div>
           </div>
         ))}
-        {/* **NEW**: Conditionally render loading indicator */}
+        {/* Conditionally render loading indicator */}
         {isLoading && <LoadingIndicator />}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Message input section */}
+      {/* Message input section: Sticky */}
       <div className="bg-transparent backdrop-blur-sm p-4 w-full sticky bottom-0 border-t border-purple-500/10 z-10 flex-shrink-0">
         <div className="max-w-4xl mx-auto">
           <form
@@ -199,14 +188,14 @@ function App() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={isLoading ? "Waiting for response..." : `Ask about Occam's Advisory...`} // Change placeholder while loading
-              className="flex-1 rounded-2xl border border-purple-500/30 bg-black/20 px-4 py-3 text-purple-50 placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-transparent backdrop-blur-sm disabled:opacity-60" // Added disabled style
-              disabled={!socket || !socket.connected || status.toLowerCase().includes('error') || isLoading} // Disable input while loading
+              placeholder={isLoading ? "Waiting for response..." : `Ask about Occam's Advisory...`}
+              className="flex-1 rounded-2xl border border-purple-500/30 bg-black/20 px-4 py-3 text-purple-50 placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-transparent backdrop-blur-sm disabled:opacity-60"
+              disabled={!socket || !socket.connected || status.toLowerCase().includes('error') || isLoading}
             />
             <button
               type="submit"
               className="bg-purple-600/80 backdrop-blur-sm text-white rounded-2xl px-6 py-3 hover:bg-purple-500/80 transition-all duration-200 flex items-center space-x-2 shadow-[0_0_15px_rgba(147,51,234,0.3)] hover:shadow-[0_0_20px_rgba(147,51,234,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!socket || !socket.connected || status.toLowerCase().includes('error') || isLoading} // Disable button while loading
+              disabled={!socket || !socket.connected || status.toLowerCase().includes('error') || isLoading}
             >
               <span>Send</span>
               <Send className="w-4 h-4" />
